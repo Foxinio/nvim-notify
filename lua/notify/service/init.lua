@@ -29,9 +29,9 @@ end
 
 function NotificationService:_run()
   self._running = true
-  local succees, updated =
+  local success, updated =
     pcall(self._animator.render, self._animator, self._pending, 1 / self._fps)
-  if not succees then
+  if not success then
     print("Error running notification service: " .. updated)
     self._running = false
     return
@@ -40,9 +40,12 @@ function NotificationService:_run()
     self._running = false
     return
   end
-  vim.defer_fn(function()
+
+  local timer = vim.loop.new_timer()
+  timer:start(1000 / self._fps, 0, vim.schedule_wrap(function()
+    timer:close()
     self:_run()
-  end, 1000 / self._fps)
+  end))
 end
 
 ---@param notif notify.Notification;q
